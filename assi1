@@ -1,4 +1,20 @@
-class callable implements Callable<Person>
+import java.util.concurrent.Callable;
+
+import java.util.*;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Random;
+import java.util.concurrent.Callable;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
+import java.util.concurrent.ThreadPoolExecutor;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.locks.ReentrantLock;
+ 
+
+ class callable implements Callable<Person>
 {
    List<Person> per;
    private ReentrantLock lock = new ReentrantLock(true);
@@ -34,6 +50,31 @@ public  Person call()  {
 	lock.unlock();
 	return per.get(0) ;
 }
+
+public void  perform()
+{
+	if(!lock.isLocked())
+	{
+		lock.lock();
+		
+		per.add(new Person(1,23,"nothing"));
+		
+		
+	}
+	else
+	{
+		try {
+			wait(1000);
+		} catch (InterruptedException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		
+	}
+	
+lock.unlock();
+	
+}
 	
   
 }
@@ -56,7 +97,7 @@ public  Person call()  {
  {
        public static void main(String[] args) throws InterruptedException, ExecutionException 
        {
-           ThreadPoolExecutor executor = (ThreadPoolExecutor) Executors.newFixedThreadPool(2);
+           ThreadPoolExecutor executor = (ThreadPoolExecutor) Executors.newFixedThreadPool(4);
             
            List<Future<Person>> resultList = new ArrayList<Future<Person>>();
             
@@ -64,12 +105,13 @@ public  Person call()  {
            ar.add(new Person(1,23,"nothing"));
            Callable<Person> callable = new callable(ar);
            Callable<Person> callable1 = new callable(ar);
-           
+           Callable<Person> callable3 = new callable(ar);
               
                Future<Person> result = executor.submit(callable);
                resultList.add(result);
                Future<Person> result1 = executor.submit(callable1);
                resultList.add(result1);
+               executor.execute(callable::perform);
            
             
            for(Future<Person> future : resultList)
