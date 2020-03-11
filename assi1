@@ -1,0 +1,85 @@
+class callable implements Callable<Person>
+{
+   List<Person> per;
+   private ReentrantLock lock = new ReentrantLock(true);
+     callable(List<Person> per)
+     {
+    	 
+    	 this.per=per;
+    	 
+     }
+     
+	 
+   
+
+
+public  Person call()  {
+	if(!lock.isLocked())
+	{
+		 
+	lock.lock();
+	
+	
+}
+	else
+	{
+		try {
+			wait(100);
+		} catch (InterruptedException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		
+	}
+	lock.unlock();
+	return per.get(0) ;
+}
+	
+  
+}
+ 
+ 
+ class Person 
+{
+  int id;
+  int dob;
+  String jobs; 
+  Person(int id,int dob,String jobs)
+  {
+	  this.id=id;
+	  this.jobs=jobs;
+	  this.dob=dob;
+}
+}
+ 
+ public class Example 
+ {
+       public static void main(String[] args) throws InterruptedException, ExecutionException 
+       {
+           ThreadPoolExecutor executor = (ThreadPoolExecutor) Executors.newFixedThreadPool(2);
+            
+           List<Future<Person>> resultList = new ArrayList<Future<Person>>();
+            
+           List<Person> ar=new ArrayList<Person>();
+           ar.add(new Person(1,23,"nothing"));
+           Callable<Person> callable = new callable(ar);
+           Callable<Person> callable1 = new callable(ar);
+           
+              
+               Future<Person> result = executor.submit(callable);
+               resultList.add(result);
+               Future<Person> result1 = executor.submit(callable1);
+               resultList.add(result1);
+           
+            
+           for(Future<Person> future : resultList)
+           {
+              
+            	  System.out.println(future.get().id);
+              
+             }
+             //shut down the executor service now
+             executor.shutdown();
+ }
+       }
+ 
